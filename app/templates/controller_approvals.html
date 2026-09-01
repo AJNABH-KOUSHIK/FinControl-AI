@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Approvals</title>
+<style>
+  :root{--bg:#08080c;--card:#0f0f14;--gold:#c8a96e;--text:#f2f0eb;--muted:#8a8680;}
+  body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;padding:2rem;}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.2rem;}
+  .card{background:var(--card);border:1px solid rgba(200,169,110,0.1);border-radius:14px;padding:1.5rem;}
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  th{color:var(--gold);text-align:left;padding:0.6rem 0.4rem;border-bottom:1px solid rgba(200,169,110,0.2);font-size:0.7rem;text-transform:uppercase;}
+  td{padding:0.7rem 0.4rem;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .btn{background:var(--gold);color:#0a0a0c;border:none;padding:0.35rem 0.7rem;border-radius:4px;font-size:0.75rem;font-weight:600;cursor:pointer;}
+</style>
+</head>
+<body>
+  <h1>Approval <span style="color:var(--gold);font-style:italic;">Queue</span></h1>
+  <div class="card">
+    <table>
+      <thead><tr><th>Type</th><th>Reference</th><th>AI Suggestion</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for a in approvals %}
+        <tr>
+          <td>{{ a.request_type }}</td>
+          <td>{{ a.request_id }}</td>
+          <td style="font-size:0.75rem;color:var(--muted);">{{ a.ai_recommendation[:60] }}...</td>
+          <td>
+            <form action="/controller/api/approval/{{ a.id }}/decide" method="post" style="display:inline;">
+              <input type="hidden" name="decision" value="approved">
+              <input type="hidden" name="user" value="controller">
+              <button class="btn">Approve</button>
+            </form>
+            <form action="/controller/api/approval/{{ a.id }}/decide" method="post" style="display:inline;">
+              <input type="hidden" name="decision" value="rejected">
+              <input type="hidden" name="user" value="controller">
+              <button class="btn" style="background:transparent;border:1px solid var(--red);color:var(--red);">Reject</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" style="color:var(--muted);">No pending approvals.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:2rem;">
+  <a href="/controller/dashboard" style="color:#c8a96e; text-decoration:none; font-size:0.85rem; letter-spacing:0.03em; border-bottom:1px solid rgba(200,169,110,0.3); padding-bottom:0.1rem; transition:color 0.2s;">
+    ← Back to Controller Command
+  </a>
+</p>
+</body>
+</html>

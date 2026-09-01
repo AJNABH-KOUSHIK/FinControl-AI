@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Exceptions</title>
+<style>
+  :root{--bg:#08080c;--card:#0f0f14;--gold:#c8a96e;--text:#f2f0eb;--muted:#8a8680;--red:#c45c5c;--yellow:#d4a843;}
+  body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;padding:2rem;}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.2rem;}
+  .card{background:var(--card);border:1px solid rgba(200,169,110,0.1);border-radius:14px;padding:1.5rem;}
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  th{color:var(--gold);text-align:left;padding:0.6rem 0.4rem;border-bottom:1px solid rgba(200,169,110,0.2);text-transform:uppercase;font-size:0.7rem;}
+  td{padding:0.7rem 0.4rem;border-bottom:1px solid rgba(255,255,255,0.03);}
+  .tag{padding:0.15rem 0.45rem;border-radius:999px;font-size:0.7rem;font-weight:600;}
+  .red{background:rgba(196,92,92,0.15);color:var(--red);}
+  .yellow{background:rgba(212,168,67,0.15);color:var(--yellow);}
+  .gold{background:rgba(200,169,110,0.15);color:var(--gold);}
+</style>
+</head>
+<body>
+  <h1>Exceptions <span style="color:var(--gold);font-style:italic;">Monitor</span></h1>
+  <div class="card">
+    <table>
+      <thead><tr><th>Exception</th><th>Severity</th><th>Impact</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for ex in items %}
+        <tr>
+          <td>{{ ex.title }}</td>
+          <td><span class="tag {{ 'red' if ex.severity=='critical' else 'yellow' if ex.severity=='high' else 'gold' }}">{{ ex.severity }}</span></td>
+          <td>${{ "%.0f"|format(ex.amount_impact) }}</td>
+          <td><span class="tag gold">{{ ex.status }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" style="color:var(--muted);">No open exceptions — controls healthy.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:2rem;">
+  <a href="/controller/dashboard" style="color:#c8a96e; text-decoration:none; font-size:0.85rem; letter-spacing:0.03em; border-bottom:1px solid rgba(200,169,110,0.3); padding-bottom:0.1rem; transition:color 0.2s;">
+    ← Back to Controller Command
+  </a>
+</p>
+</body>
+</html>

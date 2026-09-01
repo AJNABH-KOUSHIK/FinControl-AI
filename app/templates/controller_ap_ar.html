@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>AP / AR</title>
+<style>
+  :root{--bg:#08080c;--card:#0f0f14;--gold:#c8a96e;--text:#f2f0eb;--muted:#8a8680;}
+  body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;padding:2rem;}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.2rem;}
+  .card{background:var(--card);border:1px solid rgba(200,169,110,0.1);border-radius:14px;padding:1.5rem;margin-bottom:1rem;}
+  h3{font-family:'Cormorant Garamond',serif;color:var(--gold);font-weight:500;margin-top:0;}
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+  th{color:var(--gold);text-align:left;padding:0.6rem 0.4rem;border-bottom:1px solid rgba(200,169,110,0.2);font-size:0.7rem;text-transform:uppercase;}
+  td{padding:0.7rem 0.4rem;border-bottom:1px solid rgba(255,255,255,0.03);}
+  a{color:var(--gold);text-decoration:none;}
+</style>
+</head>
+<body>
+  <h1>Payables / Receivables <span style="color:var(--gold);font-style:italic;">Oversight</span></h1>
+  <div class="card">
+    <h3>Accounts Payable</h3>
+    <table>
+      <thead><tr><th>Vendor</th><th>Invoice</th><th>Amount</th><th>Due</th><th>Aging</th></tr></thead>
+      <tbody>
+      {% for a in aps %}<tr><td>{{ a.vendor_customer }}</td><td>{{ a.invoice_ref }}</td><td>${{ "%.2f"|format(a.amount) }}</td><td>{{ a.due_date }}</td><td>{{ a.aging_days }}d</td></tr>{% else %}<tr><td colspan="5" style="color:var(--muted);">None</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Accounts Receivable</h3>
+    <table>
+      <thead><tr><th>Customer</th><th>Invoice</th><th>Amount</th><th>Due</th><th>Aging</th></tr></thead>
+      <tbody>
+      {% for a in ars %}<tr><td>{{ a.vendor_customer }}</td><td>{{ a.invoice_ref }}</td><td>${{ "%.2f"|format(a.amount) }}</td><td>{{ a.due_date }}</td><td>{{ a.aging_days }}d</td></tr>{% else %}<tr><td colspan="5" style="color:var(--muted);">None</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:2rem;">
+  <a href="/controller/dashboard" style="color:#c8a96e; text-decoration:none; font-size:0.85rem; letter-spacing:0.03em; border-bottom:1px solid rgba(200,169,110,0.3); padding-bottom:0.1rem; transition:color 0.2s;">
+    ← Back to Controller Command
+  </a>
+</p>
+</body>
+</html>

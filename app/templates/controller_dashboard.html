@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinControl AI — Finance Controller Command</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #08080c;
+      --bg-card: #0f0f14;
+      --bg-card-hover: #15151c;
+      --gold: #c8a96e;
+      --gold-light: #e6cf94;
+      --gold-dim: rgba(200, 169, 110, 0.12);
+      --text-main: #f2f0eb;
+      --text-muted: #8a8680;
+      --border-subtle: rgba(200,169,110,0.1);
+      --danger: #c45c5c;
+      --danger-dim: rgba(196,92,92,0.1);
+      --success: #5ca87c;
+      --success-dim: rgba(92,168,124,0.1);
+      --warning: #d4a843;
+      --warning-dim: rgba(212,168,67,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 20% 30%, rgba(200,169,110,0.06) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(200,169,110,0.04) 0%, transparent 50%);
+    }
+    /* Header */
+    .controller-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,8,12,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1.25rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; letter-spacing: -0.02em; }
+    .brand span { color: var(--gold); font-style: italic; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none; margin-left: 2rem;
+      font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .badge-live {
+      background: var(--success); color: #fff; padding: 0.25rem 0.7rem;
+      border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    }
+
+    /* Layout */
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem 2.5rem; }
+    h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; letter-spacing: -0.03em; margin-bottom: 0.25rem; }
+    h1 span { color: var(--gold); font-style: italic; }
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+    /* Grid Sections */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2.5rem; }
+    
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4;
+    }
+    .card:hover { border-color: rgba(200,169,110,0.3); transform: translateY(-2px); }
+    .card h3 {
+      font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 1.1rem;
+      margin-bottom: 1rem; color: var(--text-main); letter-spacing: 0.01em;
+    }
+    .card h3 .icon { color: var(--gold); margin-right: 0.4rem; }
+
+    /* Metric Cards (Top Row) */
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+    .metric-card { padding: 1.5rem; }
+    .metric-card .label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .metric-card .value { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; }
+    .metric-card .delta { font-size: 0.8rem; margin-top: 0.25rem; }
+    .delta.up { color: var(--success); }
+    .delta.down { color: var(--danger); }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; font-size: 0.75rem; padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border-subtle); }
+    td { padding: 0.85rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text-main); }
+    tr:hover td { background: rgba(200,169,110,0.03); }
+    .tag {
+      display: inline-block; padding: 0.15rem 0.45rem; border-radius: 999px;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .tag.green { background: var(--success-dim); color: var(--success); }
+    .tag.red { background: var(--danger-dim); color: var(--danger); }
+    .tag.yellow { background: var(--warning-dim); color: var(--warning); }
+    .tag.gold { background: var(--gold-dim); color: var(--gold); }
+
+    /* AI Recommendation Cards */
+    .rec-card { border-left: 3px solid var(--gold); padding-left: 1rem; margin-bottom: 1rem; }
+    .rec-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .rec-card p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.75rem; }
+    .rec-actions { display: flex; gap: 0.5rem; }
+    .btn {
+      background: transparent; border: 1px solid var(--border-subtle); color: var(--text-main);
+      padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;
+      transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .btn:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-primary { background: var(--gold); color: #0a0a0c; border-color: var(--gold); font-weight: 600; }
+    .btn-primary:hover { background: var(--gold-light); border-color: var(--gold-light); }
+
+    /* Section Divider */
+    .section-divider {
+      border: none; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+      margin: 2.5rem 0;
+    }
+
+    /* Small charts */
+    .chart-container { height: 220px; position: relative; }
+    .mini-stat { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .mini-stat span:first-child { color: var(--text-muted); font-size: 0.85rem; }
+    .mini-stat span:last-child { font-weight: 600; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+
+<header class="controller-header">
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <div style="width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#0a0a0c;font-weight:bold;">T</div>
+    <h2 style="font-family:'Cormorant Garamond', serif; font-weight:300; font-size:1.2rem;">FinControl AI <span style="color:var(--gold); font-style:italic;">Controller</span></h2>
+  </div>
+  <div style="display:flex; align-items:center; gap:1.5rem;">
+    <span class="badge-live">● LIVE</span>
+    <nav class="nav-links">
+      <a href="/controller/dashboard">Dashboard</a>
+      <a href="/controller/cashflow">Cash Flow</a>
+      <a href="/controller/exceptions">Exceptions</a>
+      <a href="/controller/variance">Variance</a>
+      <a href="/controller/ap-ar">AP / AR</a>
+      <a href="/controller/recommendations">AI Actions</a>
+      <a href="/controller/approvals">Approvals</a>
+      <a href="/controller/audit">Audit Trail</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <h1>Finance Controller <span>Command</span></h1>
+  <p class="subtitle">Integrated control, cash health, variance oversight, and AI-driven decision support.</p>
+
+  <!-- METRIC OVERVIEW -->
+  <div class="metric-grid">
+    <div class="card metric-card">
+      <div class="label">Cash Health Score</div>
+      <div class="value" style="color:{{ 'var(--success)' if health_score>75 else 'var(--warning)' if health_score>50 else 'var(--danger)' }}">{{ health_score or 0 }}%</div>
+      <div class="delta">Liquidity monitored in real-time</div>
+    </div>
+    <div class="card metric-card">
+      <div class="label">Open Exceptions</div>
+      <div class="value" style="color:var(--danger)">{{ open_exceptions }}</div>
+      <div class="delta">Require controller review</div>
+    </div>
+    <div class="card metric-card">
+      <div class="label">Pending Approvals</div>
+      <div class="value" style="color:var(--warning)">{{ open_approvals }}</div>
+      <div class="delta">Awaiting human-in-the-loop</div>
+    </div>
+    <div class="card metric-card">
+      <div class="label">Avg AI Confidence</div>
+      <div class="value" style="color:var(--gold)">94%</div>
+      <div class="delta">Model certainty — last 50 scans</div>
+    </div>
+  </div>
+
+  <!-- TOP ROW: CASH FLOW + EXCEPTION MONITOR -->
+  <div class="grid-2">
+    <!-- CASH FLOW HEALTH -->
+    <div class="card">
+      <h3><span class="icon">💰</span> Cash Flow & Financial Health</h3>
+      <div class="chart-container">
+        <canvas id="cashChart"></canvas>
+      </div>
+      <div style="margin-top:1rem; display:flex; gap:1rem;">
+        <div style="flex:1;">
+          <div class="mini-stat"><span>Actual Cash</span> <span>$4.2M</span></div>
+          <div class="mini-stat"><span>Projected 30d</span> <span>$3.9M</span></div>
+          <div class="mini-stat"><span>Health</span> <span style="color:var(--success)">Healthy</span></div>
+        </div>
+        <a href="/controller/cashflow" class="btn btn-primary" style="align-self:flex-end;">Open Monitor →</a>
+      </div>
+    </div>
+
+    <!-- EXCEPTION MONITOR -->
+    <div class="card">
+      <h3><span class="icon">🚨</span> Exception & Control Monitor</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Exception</th><th>Severity</th><th>Impact</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for ex in exceptions %}
+            <tr>
+              <td>{{ ex.title }}</td>
+              <td><span class="tag {{ 'red' if ex.severity=='critical' else 'yellow' if ex.severity=='high' else 'green' }}">{{ ex.severity }}</span></td>
+              <td>${{ "%.0f"|format(ex.amount_impact) }}</td>
+              <td><span class="tag gold">{{ ex.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="color:var(--text-muted);">No open exceptions — controls healthy.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:0.75rem; text-align:right;">
+        <a href="/controller/exceptions" class="btn">View All Exceptions →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE ROW: BUDGET VS ACTUAL + AP/AR -->
+  <div class="grid-2">
+    <!-- VARIANCE -->
+    <div class="card">
+      <h3><span class="icon">📈</span> Budget vs Actual / Variance</h3>
+      <div style="height:180px;">
+        <canvas id="varianceChart"></canvas>
+      </div>
+      <div class="table-wrap" style="margin-top:1rem;">
+        <table>
+          <thead><tr><th>Category</th><th>Budget</th><th>Actual</th><th>Var %</th></tr></thead>
+          <tbody>
+            {% for v in variances %}
+            <tr>
+              <td>{{ v.category }}</td>
+              <td>${{ "%.0f"|format(v.budget_amount) }}</td>
+              <td>${{ "%.0f"|format(v.actual_amount) }}</td>
+              <td style="color:{{ 'var(--danger)' if v.variance_pct>10 else 'var(--warning)' if v.variance_pct>5 else 'var(--success)' }}">{{ v.variance_pct }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:0.75rem; text-align:right;">
+        <a href="/controller/variance" class="btn">Full Variance Report →</a>
+      </div>
+    </div>
+
+    <!-- AP / AR -->
+    <div class="card">
+      <h3><span class="icon">🧾</span> Payables / Receivables Oversight</h3>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="background:rgba(255,255,255,0.02); border-radius:10px; padding:1rem;">
+          <h4 style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.5rem;">Accounts Payable</h4>
+          <div style="font-family:'Cormorant Garamond', serif; font-size:1.8rem;">$1.2M</div>
+          <div style="font-size:0.8rem; color:var(--danger);">Overdue (30+ days): $340K</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); border-radius:10px; padding:1rem;">
+          <h4 style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:0.5rem;">Accounts Receivable</h4>
+          <div style="font-family:'Cormorant Garamond', serif; font-size:1.8rem;">$3.8M</div>
+          <div style="font-size:0.8rem; color:var(--warning);">Overdue (60+ days): $620K</div>
+        </div>
+      </div>
+      <div style="margin-top:1rem; text-align:right;">
+        <a href="/controller/ap-ar" class="btn btn-primary">Manage AP/AR →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI RECOMMENDATIONS (What should the controller do?) -->
+  <div class="card" style="margin-bottom:2.5rem;">
+    <h3><span class="icon">🤖</span> AI Controller Recommendations — "What should I do?"</h3>
+    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">Generated from current scan context, exception queue, and variance data. Each recommendation requires controller confirmation.</p>
+    <div class="grid-3">
+      {% for rec in recommendations %}
+      <div class="rec-card">
+        <h4>{{ rec.title }}</h4>
+        <p>{{ rec.description }}</p>
+        <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem;">
+          <span class="tag gold">AI Confidence: {{ "%.0f"|format(rec.confidence*100) }}%</span>
+          {% if rec.severity in ['high','critical'] %}
+          <span class="tag red">Action Required</span>
+          {% endif %}
+        </div>
+        <p style="font-size:0.8rem; color:var(--gold-light); font-style:italic; border-left:2px solid var(--gold); padding-left:0.5rem;">
+          "Recommendation: {{ rec.ai_recommendation }}"
+        </p>
+        <div class="rec-actions" style="margin-top:0.75rem;">
+          <button onclick="applyRec('{{ rec.id }}', 'approve')" class="btn btn-primary">Approve Action</button>
+          <button onclick="applyRec('{{ rec.id }}', 'reject')" class="btn">Reject</button>
+          <button onclick="applyRec('{{ rec.id }}', 'escalate')" class="btn">Escalate</button>
+        </div>
+      </div>
+      {% else %}
+      <p style="color:var(--text-muted);">No active recommendations. All controls within tolerance.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- APPROVAL QUEUE (HITL) -->
+  <div class="grid-2">
+    <div class="card">
+      <h3><span class="icon">👤</span> Approval Queue — Human-in-the-Loop</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Pending controller approvals requiring explicit decision with audit trail.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Request Type</th><th>Reference</th><th>AI Suggestion</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for a in approvals %}
+            <tr>
+              <td>{{ a.request_type }}</td>
+              <td>{{ a.request_id }}</td>
+              <td style="font-size:0.75rem; color:var(--text-muted);">{{ a.ai_recommendation[:60] }}...</td>
+              <td>
+                <a href="/controller/approvals" class="btn btn-primary" style="font-size:0.7rem;">Decide →</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="color:var(--text-muted);">No pending approvals.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AUDIT TRAIL PREVIEW -->
+    <div class="card">
+      <h3><span class="icon">📝</span> Strong Audit Trail — Controller Decisions</h3>
+      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Every view, AI recommendation applied, approval, and exception resolution is immutably logged.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
+          <tbody>
+            {% for log in audit_log %}
+            <tr>
+              <td>{{ log.timestamp[:19] }}</td>
+              <td>{{ log.user }}</td>
+              <td><span class="tag {{ 'green' if 'approve' in log.action else 'red' if 'reject' in log.action else 'gold' }}">{{ log.action }}</span></td>
+              <td>{{ log.entity }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="color:var(--text-muted);">No recent actions.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:0.75rem; text-align:right;">
+        <a href="/controller/audit" class="btn">Full Audit Report →</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Cash Flow Chart
+  const ctxCash = document.getElementById('cashChart').getContext('2d');
+  new Chart(ctxCash, {
+    type: 'line',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets: [
+        { label: 'Actual', data: [320, 400, 410, 390, 420, 430, 450], borderColor: '#c8a96e', tension: 0.4, fill: true, backgroundColor: 'rgba(200,169,110,0.08)' },
+        { label: 'Projected', data: [350, 360, 370, 380, 390, 400, 410], borderColor: '#5ca87c', tension: 0.4, fill: false, borderDash: [5,5] }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8a8680', font: { size: 10 } } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8a8680', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#8a8680', font: { size: 10 } } } } }
+  });
+
+  // Variance Chart
+  const ctxVar = document.getElementById('varianceChart').getContext('2d');
+  new Chart(ctxVar, {
+    type: 'bar',
+    data: {
+      labels: ['Marketing','Ops','IT','HR'],
+      datasets: [
+        { label: 'Budget', data: [120, 200, 150, 80], backgroundColor: '#c8a96e', borderRadius: 4 },
+        { label: 'Actual', data: [130, 190, 165, 75], backgroundColor: '#5ca87c', borderRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8a8680', font: { size: 10 } } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8a8680', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#8a8680', font: { size: 10 } } } } }
+  });
+
+  // Apply Recommendation Handler
+  async function applyRec(recId, action) {
+    const res = await fetch('/controller/api/recommendation/apply', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'X-User':'controller'},
+      body: JSON.stringify({rec_id: recId, action: action, context: {timestamp: new Date().toISOString()}})
+    });
+    const data = await res.json();
+    alert(`Action "${action}" applied to recommendation. Audit log written.` + JSON.stringify(data));
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
